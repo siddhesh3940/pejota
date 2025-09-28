@@ -1,113 +1,242 @@
-# PeJota
+# PeJota - Freelancer ERP & CRM
 
-Solo entrepreneus and Freelancer ERP and CRM.
+Solo entrepreneurs and Freelancer ERP and CRM built with PHP, Laravel, FilamentPHP, and SQLite.
 
-Build on top of PHP, Laravel, FilamentPHP, Sqlite / Mysql, and other cool and technologies
-that allow a quick high quality monolith to be created.
-
-![image](https://github.com/user-attachments/assets/b859236d-6511-4e2f-96ad-b6278b57ab5d)
-
-
-**PLEASE READ THE UPGRADE SECTION IF YOU ALREADY HAS PEJOTA INSTALLED**
-
-## Installation
-
-- Clone the repository
-- Run `composer install`
-- Run `cp .env.example .env`
-- Run `php artisan key:generate`
-- Configure your `.env` file with your database credentials
-- Run `php artisan migrate`
-- Run `npm install`
-- Run `npm run build`
-- Run `php artisan pj:install` to create the user and company records
-
-## How to contribute
-
-- See the issues list
-- Choose one labeled as **ready to develop**
-- Comment the issue informing that you started it, than I'll set it to **doing** to avoid two persons take the same issue to work on
-- Follow the good pratices of open source development flows
-- Ask for help if needed
-
-## Releases
-
-- **0.2.0 (Current)**: This release introduces a breaking change related to the migration of the `work_sessions` table. Please refer to the "Upgrades" section for detailed instructions.
-- **0.1.0**: The initial release, which includes a breaking change in compatibility with subsequent commits to the main branch.
-
-## Upgrades
-
-### Upgrading from 0.1.0 to 0.2.0
-
-The 0.2.0 release introduces a breaking change in the migration of the `work_sessions` table. Due to limitations in SQLite when altering fields, it is necessary to refresh the database to recreate all structures. Even if you are using MySQL or PostgreSQL, these steps are required because the migration files have changed.
-
-#### Upgrade Steps:
-
-1. Create a backup of your database.
-2. Export (dump) only the data.
-3. Run `php artisan migrate:refresh`.
-4. Import the exported data.
-5. Update the `work_sessions` records to set the `is_running` field to 0 by running:
-   ```sql
-   UPDATE work_sessions SET is_running = 0;
-   ```
-   
-This step is required because the is_running field is new, and previous records did not have this value explicitly set.
+![PeJota Screenshot](https://github.com/user-attachments/assets/b859236d-6511-4e2f-96ad-b6278b57ab5d)
 
 ## Features
 
-### Clients
+- **Client Management** - Register and manage clients
+- **Project Management** - Create and organize projects with tags
+- **Task Management** - Track tasks with due dates and effort estimation
+- **Work Sessions** - Time tracking for billable hours
+- **Invoice Generation** - Create and export invoices to PDF
+- **Contract Management** - Simple contract management with signatures
+- **Notes** - Save links, rich text, markdown, and code snippets
+- **Subscriptions** - Manage recurring subscriptions
+- **Vendor Management** - Track vendor relationships
+- **Multi-language Support** - English, Spanish, Portuguese
 
-Simple clients register to associate with Projects, Contracts, Tasks and Work Sessions.
+## Requirements
 
-### Vendors
+- **PHP 8.2+** with extensions:
+  - SQLite (`php_sqlite3`, `php_pdo_sqlite`)
+  - EXIF (`php_exif`) - optional
+- **Composer** - PHP dependency manager
+- **Node.js 16+** and npm
+- **Git** (for cloning)
 
-Simple vendors register to associate with Projects, Contracts, Tasks and Work Sessions.
+## Quick Setup
 
-### Projects
+### 1. Clone Repository
+```bash
+git clone https://github.com/mazer-dev/pejota.git
+cd pejota
+```
 
-Simple projects register, with description, tags and active status.
+### 2. Install Dependencies
+```bash
+composer install --ignore-platform-req=ext-exif
+npm install
+```
 
-Each project can be associated with one or none client.
+### 3. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-### Contracts
+### 4. Database Setup
+```bash
+# Create SQLite database
+touch database/database.sqlite  # Linux/Mac
+# OR
+type nul > database\database.sqlite  # Windows
 
-Simple contract management, that can be associated with a vendor or project. You can write the whole content in it and set the signatures.
+# Run migrations
+php artisan migrate
+```
 
-### Tasks
+### 5. Build Assets
+```bash
+npm run build
+```
 
-Tasks module with tasks control, by client and/or project, with data for planned and actual dates, also with dedicated due date information.
+### 6. Create Admin User
+```bash
+php artisan pj:install
+```
+Follow prompts to create your admin user and company.
 
-Data that can be associated: tags, description, estimated effort (min or hours)
+### 7. Start Server
+```bash
+php artisan serve
+```
 
-Table data grouped by clients, due date, projects.
+Visit `http://localhost:8000` and login with your credentials.
 
-Global searh of tasks.
+## Windows Setup Script
 
-### Work Sessions
+For Windows users, run the automated setup:
 
-Control sessions of work, related to client / project / task.
+```cmd
+setup.bat
+```
 
-Each session has a start and end period, used to calculate the duration.
+## Troubleshooting
 
-### Invoices
+### SQLite Driver Missing
+Enable in `php.ini`:
+```ini
+extension=sqlite3
+extension=pdo_sqlite
+```
 
-Simple invoice management, with the ability to export to PDF.
+### EXIF Extension Error
+Either enable in `php.ini`:
+```ini
+extension=exif
+```
+Or install ignoring the requirement:
+```bash
+composer install --ignore-platform-req=ext-exif
+```
 
-### Notes
+### User Already Exists Error
+If `php artisan pj:install` fails with "user exists":
+```bash
+# Reset database
+php artisan migrate:fresh
+php artisan pj:install
 
-Save Links, Rich Text, Markdown, Plain text notes and Code Snippets.
+# OR use different email when prompted
+```
 
-### Subscriptions
+### Node.js Version Issues
+Update to Node.js 20+ or clear cache:
+```bash
+npm cache clean --force
+npm install
+```
 
-Control your subscriptions, with a simple way to manage the subscriptions you have.
+## Configuration
 
-### Settings
+### Database
+Default: SQLite (`database/database.sqlite`)
 
-#### Statuses
+For MySQL/PostgreSQL, update `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pejota
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Create your own status to better control your workflow.
+### Application URL
+```env
+APP_URL=http://localhost:8000
+```
 
-#### Company
+## Upgrading
 
-General settings of system use by your company.
+### From 0.1.0 to 0.2.0
+⚠️ **Breaking Change**: Database refresh required
+
+1. Backup your data
+2. Export data only (not structure)
+3. Run: `php artisan migrate:refresh`
+4. Import your data
+5. Update work sessions: `UPDATE work_sessions SET is_running = 0;`
+
+## Development
+
+### Start Development Server
+```bash
+php artisan serve
+```
+
+### Watch Assets (Development)
+```bash
+npm run dev
+```
+
+### Run Tests
+```bash
+php artisan test
+```
+
+## Production Deployment
+
+1. Set environment to production:
+```env
+APP_ENV=production
+APP_DEBUG=false
+```
+
+2. Optimize application:
+```bash
+composer install --optimize-autoloader --no-dev
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+npm run build
+```
+
+3. Set proper file permissions:
+```bash
+chmod -R 755 storage bootstrap/cache
+```
+
+## File Structure
+
+```
+pejota/
+├── app/
+│   ├── Filament/App/        # Main application panels
+│   ├── Models/              # Eloquent models
+│   ├── Console/Commands/    # Artisan commands
+│   └── Http/Controllers/    # Controllers
+├── database/
+│   ├── migrations/          # Database migrations
+│   └── database.sqlite      # SQLite database
+├── resources/
+│   ├── css/                 # Stylesheets
+│   ├── js/                  # JavaScript
+│   └── views/               # Blade templates
+└── public/                  # Web accessible files
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature-name`
+3. Commit changes: `git commit -am 'Add feature'`
+4. Push branch: `git push origin feature-name`
+5. Submit pull request
+
+See issues labeled **ready to develop** for available tasks.
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+- **Documentation**: Check this README and setup guides
+- **Issues**: [GitHub Issues](https://github.com/mazer-dev/pejota/issues)
+- **Logs**: Check `storage/logs/` for error details
+
+## Credits
+
+Built by [MAZER.DEV](https://mazer.dev)
+
+- [LinkedIn](https://www.linkedin.com/company/mazer-dev)
+- [GitHub](https://github.com/mazer-dev/pejota)
+
+---
+
+**Current Version**: 0.2.0  
+**Laravel Version**: 11.x  
+**PHP Version**: 8.2+
